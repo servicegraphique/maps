@@ -1,0 +1,132 @@
+/* ============================================================================
+ * MAPFINDER — css/responsive.css
+ * Adaptations tablette et mobile.
+ * ==========================================================================*/
+
+/* ==================================================== Desktop large <=1440 */
+@media (max-width: 1440px) {
+  .workspace { grid-template-columns: minmax(320px, 36%) 1fr; }
+}
+
+/* ========================================================== Tablette <=1100 */
+@media (max-width: 1100px) {
+  .brand-tagline { display: none; }
+  .topbar__nav .btn span { display: none; }
+  .topbar__nav .btn { padding: 0 9px; }
+
+  .workspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+  .results-panel {
+    max-height: none;
+    order: 2;
+  }
+  .map-panel { order: 1; min-height: 58vh; }
+  .results-scroll { max-height: 46vh; }
+
+  .detail-grid { grid-template-columns: 1fr; }
+  .detail-map-wrap { min-height: 260px; }
+  .aerial-layout { grid-template-columns: 1fr; }
+  .aerial-map-wrap { min-height: 340px; }
+  .aerial-side { flex-direction: row; flex-wrap: wrap; }
+  .aerial-side > * { flex: 1 1 240px; }
+}
+
+/* ========================================================== Mobile <=760 */
+@media (max-width: 760px) {
+  :root { --header-h: 56px; }
+
+  body { font-size: 14.5px; }
+
+  .topbar { gap: 8px; padding: 0 12px; }
+  .brand-name { font-size: 16.5px; }
+  .brand-logo { width: 30px; height: 30px; }
+  .topbar__nav { gap: 0; }
+  .topbar__nav .btn { height: 34px; padding: 0 8px; }
+  #btn-history span, #btn-favorites span { display: none; }
+
+  .searchbar { padding: 10px 12px; }
+  .search-field { height: 48px; padding-left: 11px; gap: 6px; }
+  .search-field__input { font-size: 15.5px; }
+  .search-field__submit { height: 38px; padding: 0 13px; }
+  .search-field__submit span { display: none; }
+  .search-field__ico { width: 18px; height: 18px; }
+
+  .searchbar__hints { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .search-hint { font-size: 11.5px; }
+  .search-parse { margin-left: 0; font-size: 11.5px; }
+
+  .suggestions { max-height: 300px; }
+
+  .workspace {
+    padding: 8px 10px 0;
+    gap: 8px;
+    min-height: 0;
+  }
+  .map-panel { min-height: 52vh; }
+  .results-scroll { max-height: 40vh; }
+
+  .map-legend { display: none; }
+  .map-readout { font-size: 10.5px; padding: 5px 10px; gap: 6px; }
+  .map-readout__item#readout-cursor { display: none; }
+  .map-toolbar { top: 8px; left: 8px; gap: 6px; }
+  .map-toolbar__group .select { max-width: 122px; font-size: 12px; }
+
+  .detail-zone { margin-top: 8px; padding: 0 10px; }
+  .tabpanel { padding: 10px; }
+  .tab { padding: 0 10px; font-size: 12.5px; height: 38px; }
+  .tab svg.ico { width: 15px; height: 15px; }
+  .detail-actions { width: 100%; padding: 6px 0 4px; justify-content: flex-start; }
+
+  .info-row { grid-template-columns: 92px 1fr; padding: 6px 12px; font-size: 12px; }
+  .info-head { padding: 11px 12px; }
+  .precision-note { margin: 8px 12px 12px; }
+
+  .aerial-map-wrap { min-height: 300px; }
+  .aerial-side { flex-direction: column; }
+  .photos-controls { width: 100%; justify-content: space-between; }
+  .photos-head { align-items: flex-start; }
+
+  .photo-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .photo-card__body { padding: 7px 9px 8px; }
+
+  .footer { flex-direction: column; gap: 8px; padding: 12px 12px 18px; }
+
+  .modal { padding: 0; align-items: flex-end; }
+  .modal__panel {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+  }
+  .lightbox { padding: 0; }
+  .lightbox__panel { max-height: 100vh; height: 100%; border-radius: 0; border: 0; }
+  .lightbox__stage img { max-height: calc(100vh - 140px); }
+  .lightbox__nav { width: 36px; height: 36px; }
+
+  .toast-stack { right: 10px; left: 10px; bottom: 10px; max-width: none; }
+}
+
+/* ======================================================== Très petit <=420 */
+@media (max-width: 420px) {
+  .map-panel { min-height: 44vh; }
+  .photo-grid { grid-template-columns: 1fr 1fr; }
+  .empty-state { padding: 18px 14px; }
+  .detail-actions .btn { flex: 1 1 auto; }
+}
+
+/* ============================================================ Orientation */
+@media (max-height: 560px) and (orientation: landscape) {
+  .map-panel { min-height: 70vh; }
+  .results-scroll { max-height: 60vh; }
+}
+
+/* ======================================================== Impression */
+@media print {
+  .topbar, .searchbar, .map-toolbar, .map-legend, .map-readout,
+  .detail-zone .tabs, .footer__meta, .toast-stack, .map-loading { display: none !important; }
+  body { background: #fff; color: #000; }
+  .workspace { display: block; padding: 0; }
+  .results-panel, .map-panel, .detail-zone { border: 1px solid #ccc; box-shadow: none; page-break-inside: avoid; }
+  .map-panel, .map { min-height: 300px; height: 300px; }
+}

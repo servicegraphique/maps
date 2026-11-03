@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MAPFINDER — recherchez une entreprise, une adresse ou un bâtiment, localisez-le sur une carte, visualisez son toit en vue aérienne et consultez ses photographies de rue.">
+  <meta name="color-scheme" content="light dark">
+  <title>MAPFINDER — Recherche et géolocalisation de bâtiments</title>
+
+  <link rel="icon" href="assets/logo/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="vendor/pannellum/pannellum.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+<a class="skip-link" href="#search-input">Aller à la recherche</a>
+
+<!-- ============================================================ HEADER -->
+<header class="topbar" role="banner">
+  <div class="topbar__brand">
+    <img class="brand-logo" src="assets/logo/logo.svg" alt="" width="38" height="38">
+    <div class="brand-text">
+      <span class="brand-name">MAP<span>FINDER</span></span>
+      <span class="brand-tagline">Recherche &amp; géolocalisation de bâtiments</span>
+    </div>
+  </div>
+
+  <nav class="topbar__nav" aria-label="Navigation principale">
+    <button type="button" class="btn btn--ghost" id="btn-history" title="Historique des recherches">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M12 8v4l3 2M3.05 11a9 9 0 1 1 .5 4"/><path d="M3 4v7h7"/></svg>
+      <span>Historique</span>
+    </button>
+    <button type="button" class="btn btn--ghost" id="btn-favorites" title="Favoris et sélection">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M12 3.5l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.9l6.1-.8z"/></svg>
+      <span>Favoris</span>
+    </button>
+    <button type="button" class="btn btn--ghost" id="btn-settings" title="Paramètres">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      <span>Paramètres</span>
+    </button>
+    <button type="button" class="btn btn--ghost" id="btn-sources" title="Sources cartographiques et licences">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+      <span>Sources</span>
+    </button>
+  </nav>
+</header>
+
+<!-- =========================================================== RECHERCHE -->
+<section class="searchbar" aria-label="Recherche">
+  <div class="searchbar__inner">
+    <form class="search-form" id="search-form" role="search" autocomplete="off">
+      <div class="search-field" id="search-field">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="search-field__ico"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input
+          id="search-input"
+          class="search-field__input"
+          type="search"
+          name="q"
+          placeholder="Entreprise, adresse, rue, code postal, ville…"
+          aria-label="Rechercher une entreprise, une adresse, une rue, un code postal ou une ville"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded="false"
+          aria-controls="suggestions-list"
+          aria-describedby="search-hint"
+          autocomplete="off"
+          spellcheck="false">
+        <button type="button" class="search-field__clear" id="btn-clear" title="Effacer" aria-label="Effacer la recherche" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+        <button type="submit" class="btn btn--primary search-field__submit" id="btn-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span>Rechercher</span>
+        </button>
+      </div>
+
+      <ul class="suggestions" id="suggestions-list" role="listbox" aria-label="Suggestions de recherche" hidden></ul>
+    </form>
+
+    <div class="searchbar__hints">
+      <p class="search-hint" id="search-hint">
+        Exemples :
+        <button type="button" class="chip" data-example="Renault, 75001 Paris">Renault, 75001 Paris</button>
+        <button type="button" class="chip" data-example="Société Générale Paris">Société Générale Paris</button>
+        <button type="button" class="chip" data-example="15 rue de la Paix, 75002 Paris">15 rue de la Paix, 75002 Paris</button>
+        <button type="button" class="chip" data-example="75008 Paris">75008 Paris</button>
+        <button type="button" class="chip" data-example="Antananarivo">Maison à Antananarivo</button>
+      </p>
+      <p class="search-parse" id="search-parse" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<!-- Bandeau d'état des services -->
+<div class="service-banner" id="service-banner" role="status" aria-live="polite" hidden></div>
+
+<!-- ============================================================= CONTENU -->
+<main class="workspace" id="workspace">
+
+  <!-- ------------------------------------------------ Colonne des résultats -->
+  <aside class="results-panel" id="results-panel" aria-label="Résultats de recherche">
+    <div class="panel-head">
+      <div>
+        <h2 class="panel-title">Résultats</h2>
+        <p class="panel-sub" id="results-count">Aucune recherche pour l’instant</p>
+      </div>
+      <div class="panel-head__actions">
+        <button type="button" class="icon-btn" id="btn-export" title="Exporter les résultats en CSV" aria-label="Exporter les résultats en CSV" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+        </button>
+        <button type="button" class="icon-btn" id="btn-sort" title="Trier les résultats" aria-label="Trier les résultats">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M7 4v16M7 20l-3-3M17 20V4M17 4l3 3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="results-toolbar" id="results-toolbar" hidden>
+      <label class="switch">
+        <input type="checkbox" id="toggle-precision-filter">
+        <span>Masquer les résultats approximatifs</span>
+      </label>
+    </div>
+
+    <div class="results-scroll" id="results-scroll">
+      <!-- état vide -->
+      <div class="empty-state" id="results-empty">
+        <img src="assets/images/empty-search.svg" alt="" width="96" height="96" class="empty-state__art">
+        <h3>Que cherchez-vous&nbsp;?</h3>
+        <p>Recherchez une <strong>entreprise</strong>, une <strong>adresse complète</strong>,
+          une <strong>rue</strong>, un <strong>code postal</strong> ou une <strong>ville</strong>.
+          MAPFINDER localise le bâtiment, affiche son toit en vue aérienne et cherche
+          des photographies de rue lorsqu’il en existe.</p>
+        <ul class="empty-state__tips">
+          <li>« Renault, 75001 Paris » — nom + code postal</li>
+          <li>« 15 rue de la Paix, 75002 Paris » — adresse</li>
+          <li>« 75008 Paris » — code postal + ville</li>
+        </ul>
+      </div>
+
+      <div class="skeleton-list" id="results-skeleton" hidden>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+
+      <ul class="results-list" id="results-list" aria-label="Liste des résultats"></ul>
+
+      <div class="results-message" id="results-message" hidden></div>
+    </div>
+
+    <div class="panel-foot">
+      <button type="button" class="btn btn--soft btn--block" id="btn-clear-search" disabled>
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        Effacer les critères
+      </button>
+    </div>
+  </aside>
+
+  <!-- ------------------------------------------------------- Carte principale -->
+  <section class="map-panel" id="map-panel" aria-label="Carte interactive">
+    <div id="map" class="map" role="application" aria-label="Carte interactive du bâtiment recherché"></div>
+
+    <div class="map-toolbar" role="toolbar" aria-label="Outils de la carte">
+      <div class="map-toolbar__group">
+        <label class="sr-only" for="select-basemap">Fond de carte</label>
+        <select id="select-basemap" class="select" title="Changer le fond de carte">
+          <option value="osm">Carte OpenStreetMap</option>
+          <option value="osmfr">Carte OSM France</option>
+          <option value="positron">Carte claire</option>
+        </select>
+      </div>
+      <div class="map-toolbar__group">
+        <button type="button" class="icon-btn icon-btn--solid" id="btn-recenter" title="Centrer la carte sur le bâtiment" aria-label="Centrer la carte sur le bâtiment">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+        </button>
+        <button type="button" class="icon-btn icon-btn--solid" id="btn-fullscreen" title="Plein écran" aria-label="Passer la carte en plein écran" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="map-readout" id="map-readout" aria-live="off">
+      <span class="map-readout__item" id="readout-gps">—</span>
+      <span class="map-readout__sep" aria-hidden="true">·</span>
+      <span class="map-readout__item" id="readout-cursor" title="Coordonnées sous le curseur">curseur : —</span>
+    </div>
+
+    <div class="map-legend" id="map-legend">
+      <span class="legend-item"><i class="legend-dot legend-dot--centroid"></i>Emprise du bâtiment</span>
+      <span class="legend-item"><i class="legend-dot legend-dot--exact"></i>Point d’intérêt</span>
+      <span class="legend-item"><i class="legend-dot legend-dot--approximate"></i>Position approximative</span>
+      <span class="legend-item"><i class="legend-dot legend-dot--selection"></i>Sélection</span>
+    </div>
+
+    <div class="map-loading" id="map-loading" hidden>
+      <span class="spinner" aria-hidden="true"></span>
+      <span>Recherche en cours…</span>
+    </div>
+  </section>
+</main>
+
+<!-- ======================================================= ZONE INFÉRIEURE -->
+<section class="detail-zone" id="detail-zone" aria-label="Détails du bâtiment">
+  <div class="tabs" role="tablist" aria-label="Vues du bâtiment">
+    <button type="button" class="tab is-active" role="tab" id="tab-btn-map" aria-selected="true" aria-controls="tab-map" data-tab="map">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>
+      Vue carte
+    </button>
+    <button type="button" class="tab" role="tab" id="tab-btn-aerial" aria-selected="false" aria-controls="tab-aerial" data-tab="aerial" tabindex="-1">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M12 2l4 7H8l4-7z"/><path d="M4 14h16l-2 4H6l-2-4z"/></svg>
+      Vue aérienne
+      <span class="tab__badge" id="aerial-badge" hidden>!</span>
+    </button>
+    <button type="button" class="tab" role="tab" id="tab-btn-photos" aria-selected="false" aria-controls="tab-photos" data-tab="photos" tabindex="-1">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>
+      Photos du bâtiment
+      <span class="tab__count" id="photos-count" hidden></span>
+    </button>
+
+    <div class="tabs__spacer"></div>
+
+    <div class="detail-actions" id="detail-actions" hidden>
+      <button type="button" class="btn btn--soft btn--sm" id="btn-copy-coords" title="Copier les coordonnées GPS">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4V4h11v1"/></svg>
+        GPS
+      </button>
+      <button type="button" class="btn btn--soft btn--sm" id="btn-copy-address" title="Copier l’adresse">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4V4h11v1"/></svg>
+        Adresse
+      </button>
+      <button type="button" class="btn btn--soft btn--sm" id="btn-favorite" title="Ajouter aux favoris" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M12 3.5l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.9l6.1-.8z"/></svg>
+        Favori
+      </button>
+      <button type="button" class="btn btn--soft btn--sm" id="btn-select" title="Ajouter à la sélection" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M4 12l5 5L20 6"/></svg>
+        Sélectionner
+      </button>
+      <a class="btn btn--soft btn--sm" id="btn-route" href="#" target="_blank" rel="noopener" title="Calculer un itinéraire">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M6 19a3 3 0 1 1 0-6c0-4 12-3 12-7a3 3 0 1 0-3 3"/></svg>
+        Itinéraire
+      </a>
+    </div>
+  </div>
+
+  <!-- --------------------------------------------------------- Tab : carte -->
+  <div class="tabpanel is-active" id="tab-map" role="tabpanel" aria-labelledby="tab-btn-map" tabindex="0">
+    <div class="detail-grid">
+      <div class="detail-card" id="detail-card">
+        <p class="placeholder" id="detail-placeholder">
+          Sélectionnez un résultat pour afficher la fiche détaillée du bâtiment :
+          adresse complète, coordonnées GPS, précision et informations OpenStreetMap.
+        </p>
+      </div>
+      <div class="detail-map-wrap">
+        <div id="detail-map" class="detail-map" role="application" aria-label="Carte de situation du bâtiment"></div>
+        <div class="detail-map-note">Fond de carte OpenStreetMap — <strong>carte routière</strong>, pas une vue aérienne.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- -------------------------------------------------------- Tab : aérien -->
+  <div class="tabpanel" id="tab-aerial" role="tabpanel" aria-labelledby="tab-btn-aerial" tabindex="0" hidden>
+    <div class="aerial-layout">
+      <div class="aerial-map-wrap">
+        <div id="aerial-map" class="aerial-map" role="application" aria-label="Vue aérienne du bâtiment"></div>
+        <div class="aerial-status" id="aerial-status" aria-live="polite"></div>
+      </div>
+      <aside class="aerial-side">
+        <div class="aerial-provider">
+          <label for="select-imagery" class="field-label">Source d’imagerie</label>
+          <select id="select-imagery" class="select select--block"></select>
+          <p class="aerial-provider__desc" id="imagery-desc"></p>
+          <p class="aerial-provider__licence" id="imagery-licence"></p>
+        </div>
+
+        <div class="aerial-info" id="aerial-info">
+          <h3>Ce que montre cette vue</h3>
+          <ul class="aerial-list" id="aerial-list">
+            <li>Emprise du bâtiment si OpenStreetMap la connaît (contour jaune).</li>
+            <li>Le toit, les bâtiments voisins, les routes et les parcelles.</li>
+            <li>Un clic sur l’image mesure la distance et l’azimut depuis le marqueur.</li>
+          </ul>
+        </div>
+
+        <div class="aerial-honesty" id="aerial-honesty">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <p>La vue aérienne est une <strong>orthophotographie</strong> réelle fournie par un service tiers gratuit.
+            Sa date peut différer de l’état actuel du bâtiment, et la résolution varie selon la zone.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- -------------------------------------------------------- Tab : photos -->
+  <div class="tabpanel" id="tab-photos" role="tabpanel" aria-labelledby="tab-btn-photos" tabindex="0" hidden>
+    <div class="photos-head">
+      <div>
+        <h3 class="photos-title">Photographies de rue géolocalisées</h3>
+        <p class="photos-sub" id="photos-sub">Aucune recherche — les photos seront recherchées autour du bâtiment sélectionné.</p>
+      </div>
+      <div class="photos-controls">
+        <label class="field-label" for="select-radius">Rayon de recherche</label>
+        <select id="select-radius" class="select">
+          <option value="30">30 m</option>
+          <option value="60" selected>60 m</option>
+          <option value="100">100 m</option>
+          <option value="150">150 m</option>
+        </select>
+        <button type="button" class="btn btn--soft btn--sm" id="btn-reload-photos" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5"/></svg>
+          Actualiser
+        </button>
+      </div>
+    </div>
+
+    <div class="photos-body">
+      <div class="photos-empty" id="photos-empty" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico ico--xl"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>
+        <p class="photos-empty__title">Aucune photographie disponible pour cette localisation.</p>
+        <p class="photos-empty__text">Aucune source libre (Panoramax, KartaView) ne fournit d’image de rue dans ce rayon.
+          Essayez un rayon plus large, ou consultez la vue aérienne.</p>
+      </div>
+
+      <div class="photos-loading" id="photos-loading" hidden>
+        <span class="spinner" aria-hidden="true"></span>
+        <span>Recherche de photographies à proximité…</span>
+      </div>
+
+      <ul class="photo-grid" id="photo-grid" aria-label="Photographies du bâtiment"></ul>
+    </div>
+
+    <p class="photos-credits" id="photos-credits"></p>
+  </div>
+</section>
+
+<!-- ============================================================== FOOTER -->
+<footer class="footer">
+  <p class="footer__main">
+    <strong>MAPFINDER</strong> — données <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a> (ODbL),
+    géocodage <a href="https://photon.komoot.io/" target="_blank" rel="noopener">Photon</a> &amp;
+    <a href="https://nominatim.org/" target="_blank" rel="noopener">Nominatim</a>,
+    imagerie <a href="https://geoservices.ign.fr" target="_blank" rel="noopener">IGN</a> / Esri,
+    photos <a href="https://panoramax.fr" target="_blank" rel="noopener">Panoramax</a> &amp;
+    <a href="https://kartaview.org" target="_blank" rel="noopener">KartaView</a>.
+  </p>
+  <p class="footer__meta">
+    <span id="footer-status">Prêt</span>
+    <button type="button" class="linklike" id="btn-footer-sources">Conditions &amp; licences</button>
+  </p>
+</footer>
+
+<!-- ============================================================= MODALES -->
+<!-- Paramètres -->
+<div class="modal" id="modal-settings" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
+  <div class="modal__backdrop" data-close="modal-settings"></div>
+  <div class="modal__panel">
+    <header class="modal__head">
+      <h2 id="settings-title">Paramètres</h2>
+      <button type="button" class="icon-btn" data-close="modal-settings" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </header>
+    <div class="modal__body">
+      <section class="settings-group">
+        <h3>Affichage</h3>
+        <div class="field">
+          <label for="pref-theme" class="field-label">Thème</label>
+          <select id="pref-theme" class="select select--block">
+            <option value="auto">Automatique (système)</option>
+            <option value="light">Clair</option>
+            <option value="dark">Sombre</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pref-basemap" class="field-label">Fond de carte par défaut</label>
+          <select id="pref-basemap" class="select select--block">
+            <option value="osm">Carte OpenStreetMap</option>
+            <option value="osmfr">Carte OSM France</option>
+            <option value="positron">Carte claire</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pref-imagery" class="field-label">Source d’imagerie aérienne préférée</label>
+          <select id="pref-imagery" class="select select--block"></select>
+        </div>
+      </section>
+
+      <section class="settings-group">
+        <h3>Sources &amp; requêtes</h3>
+        <label class="switch switch--row">
+          <input type="checkbox" id="pref-nominatim">
+          <span>
+            <strong>Activer Nominatim</strong>
+            <small>Complète Photon pour la recherche validée (1 requête/seconde maximum, jamais pour l’autocomplétion).</small>
+          </span>
+        </label>
+        <label class="switch switch--row">
+          <input type="checkbox" id="pref-osm-context">
+          <span>
+            <strong>Rechercher l’emprise du bâtiment (Overpass)</strong>
+            <small>Récupère le contour du bâtiment dans OpenStreetMap pour afficher une précision « Bâtiment ». Désactivez si le service public est saturé.</small>
+          </span>
+        </label>
+        <label class="switch switch--row">
+          <input type="checkbox" id="pref-precision-notes">
+          <span>
+            <strong>Afficher les explications de précision</strong>
+            <small>Précise pour chaque résultat ce que la source sait réellement.</small>
+          </span>
+        </label>
+      </section>
+
+      <section class="settings-group">
+        <h3>Diagnostic</h3>
+        <p class="settings-note">Vérifie, depuis ce navigateur, quelles sources d’imagerie aérienne répondent réellement à la position affichée.</p>
+        <div class="settings-actions">
+          <button type="button" class="btn btn--soft btn--sm" id="btn-diagnose-imagery">Tester les sources d’imagerie</button>
+          <button type="button" class="btn btn--soft btn--sm" id="btn-diagnose-services">Tester les services de recherche</button>
+        </div>
+        <div class="diagnostic" id="diagnostic-output" aria-live="polite"></div>
+      </section>
+
+      <section class="settings-group">
+        <h3>Données locales</h3>
+        <p class="settings-note" id="cache-stats">—</p>
+        <div class="settings-actions">
+          <button type="button" class="btn btn--soft btn--sm" id="btn-clear-cache">Vider le cache des requêtes</button>
+          <button type="button" class="btn btn--soft btn--sm" id="btn-export-data">Exporter mes données</button>
+          <button type="button" class="btn btn--ghost btn--sm" id="btn-import-data">Importer…</button>
+          <button type="button" class="btn btn--danger btn--sm" id="btn-reset-all">Tout réinitialiser</button>
+        </div>
+        <input type="file" id="import-file" accept="application/json" hidden>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- Sources & licences -->
+<div class="modal" id="modal-sources" role="dialog" aria-modal="true" aria-labelledby="sources-title" hidden>
+  <div class="modal__backdrop" data-close="modal-sources"></div>
+  <div class="modal__panel modal__panel--wide">
+    <header class="modal__head">
+      <h2 id="sources-title">Sources cartographiques, limites et licences</h2>
+      <button type="button" class="icon-btn" data-close="modal-sources" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </header>
+    <div class="modal__body" id="sources-body">
+      <!-- rempli par app.js -->
+    </div>
+  </div>
+</div>
+
+<!-- Historique -->
+<div class="modal" id="modal-history" role="dialog" aria-modal="true" aria-labelledby="history-title" hidden>
+  <div class="modal__backdrop" data-close="modal-history"></div>
+  <div class="modal__panel">
+    <header class="modal__head">
+      <h2 id="history-title">Historique des recherches</h2>
+      <button type="button" class="icon-btn" data-close="modal-history" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </header>
+    <div class="modal__body">
+      <ul class="history-list" id="history-list"></ul>
+      <p class="settings-note" id="history-empty">Aucune recherche enregistrée pour l’instant.</p>
+      <div class="settings-actions">
+        <button type="button" class="btn btn--danger btn--sm" id="btn-clear-history">Effacer l’historique</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Favoris & sélection -->
+<div class="modal" id="modal-favorites" role="dialog" aria-modal="true" aria-labelledby="favorites-title" hidden>
+  <div class="modal__backdrop" data-close="modal-favorites"></div>
+  <div class="modal__panel">
+    <header class="modal__head">
+      <h2 id="favorites-title">Favoris et sélection</h2>
+      <button type="button" class="icon-btn" data-close="modal-favorites" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </header>
+    <div class="modal__body">
+      <h3 class="modal__subtitle">Favoris <span class="count-pill" id="fav-count">0</span></h3>
+      <ul class="fav-list" id="fav-list"></ul>
+      <p class="settings-note" id="fav-empty">Aucun favori. Sélectionnez un bâtiment puis cliquez sur « Favori ».</p>
+
+      <h3 class="modal__subtitle">Sélection multi-bâtiments <span class="count-pill" id="sel-count">0</span></h3>
+      <ul class="fav-list" id="sel-list"></ul>
+      <p class="settings-note" id="sel-empty">Aucun bâtiment sélectionné.</p>
+
+      <div class="settings-actions">
+        <button type="button" class="btn btn--soft btn--sm" id="btn-export-selection">Exporter la sélection (CSV)</button>
+        <button type="button" class="btn btn--soft btn--sm" id="btn-show-selection">Afficher sur la carte</button>
+        <button type="button" class="btn btn--danger btn--sm" id="btn-clear-favorites">Tout effacer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox photo -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-labelledby="lightbox-title" hidden>
+  <div class="lightbox__backdrop" data-close="lightbox"></div>
+  <div class="lightbox__panel">
+    <header class="lightbox__head">
+      <div>
+        <h2 id="lightbox-title">Photographie de rue</h2>
+        <p class="lightbox__meta" id="lightbox-meta"></p>
+      </div>
+      <div class="lightbox__tools">
+        <button type="button" class="icon-btn" id="lightbox-pano" title="Ouvrir le panorama 360°" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg>
+        </button>
+        <a class="icon-btn" id="lightbox-source" href="#" target="_blank" rel="noopener" title="Voir la photo sur sa source">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M14 4h6v6M20 4l-9 9M9 5H5a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-4"/></svg>
+        </a>
+        <button type="button" class="icon-btn" data-close="lightbox" aria-label="Fermer">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </header>
+    <div class="lightbox__body">
+      <button type="button" class="lightbox__nav lightbox__nav--prev" id="lightbox-prev" aria-label="Photo précédente">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <div class="lightbox__stage" id="lightbox-stage"></div>
+      <button type="button" class="lightbox__nav lightbox__nav--next" id="lightbox-next" aria-label="Photo suivante">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+    <footer class="lightbox__foot">
+      <p id="lightbox-credit"></p>
+      <p id="lightbox-position"></p>
+    </footer>
+  </div>
+</div>
+
+<div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+<!-- ============================================================ SCRIPTS -->
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="vendor/pannellum/pannellum.js"></script>
+<script src="config/services.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/api-services.js"></script>
+<script src="js/geocoding.js"></script>
+<script src="js/overpass.js"></script>
+<script src="js/search.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/map.js"></script>
+<script src="js/satellite.js"></script>
+<script src="js/street-images.js"></script>
+<script src="js/export.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
