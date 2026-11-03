@@ -1,0 +1,12 @@
+# Dépendances de développement (uniquement pour les tests automatisés)
+node_modules/
+
+# Journaux et fichiers systèmes
+*.log
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Captures et exports générés à l'exécution
+exports/
+*.csv
